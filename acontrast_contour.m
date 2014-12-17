@@ -1,9 +1,43 @@
-function [FEATURE_MAT,RAW_FEATURES,FEATURE_NAME,CONSENSUS,SONOGRAMS,F,T]=aconstrast_contour(SIGNAL,FS,varargin)
+function [FEATURE_MAT,RAW_FEATURES,FEATURE_NAME,CONSENSUS,F,T]=aconstrast_contour(SIGNAL,FS,varargin)
+%Computes acoustic contrast scores using the contour transform.
+%
+%	[FEATURE_MAT,RAW_FEATURES,FEATURE_NAME,CONSENSUS,SONOGRAMS,F,T]=aconstrast_contour(SIGNAL,FS,varargin)
+%
+%	SIGNAL
+%	audio signal (double)
+%
+%	FS
+%	sampling rate
+%
+%	the function has the following outputs:
+%
+%	FEATURE_MAT
+%	regression coefficient matrix (sum absolute values across rows to get score, see demo for example)
+%
+%	RAW_FEATURES
+%	raw contour features (typically not used)
+%
+%	FEATURE_NAMES
+%	parameters used for each row of the RAW_FEATURES matrix
+%
+%	CONSENSUS
+%	consensus contour image used as the basis for RAW_FEATURES
+%	
+%	F
+%	frequency vector for CONSENSUS
+%
+%	T
+%	time vector for CONSENSUS
+%
+%See also acontrast_demo.m, acontrast_deltacoef.m, acontrast_envelope.m
 
-%
-%
-%
-%
+if nargin<1 | isempty(SIGNAL)
+	error('Need signal to continue');
+end
+
+if nargin<2 |  isempty(FS)
+	error('Need sampling rate to continue');
+end
 
 %% PARAMETERS (PASSED AS PARAMETER/VALUE PAIRS) 
 
