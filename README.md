@@ -4,6 +4,8 @@ This is a MATLAB toolbox for computing acoustic contrast scores using either the
 
 Parameters are passed as parameter/value pairs (see demo script for example).
 
+This has been tested with MATLAB R2012b running on Max OS X 10.9.  Toolbox requirements:  Image Processing Toolbox, Signal Processing Toolbox, Parallel Processing Toolbox.
+
 
 
 
