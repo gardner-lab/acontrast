@@ -5,7 +5,7 @@ font_size=12; % self-explanatory
 disp_band=[0 12e3]; % spectrogram band to display
 clipping=0; % clipping for spectrogram
 imscale=15; % image scaling parameter
-regression_timescale=.0075; % sets the smoothness of the derivative calculation
+regression_timescale=.0075; % sets the smoothness of the derivative calculation (in s)
 pow_scale='log'; % use log power weighting (try 'lin' for linear)
 pow_weight=1; % enable power weighting
 % Load the sample sound
