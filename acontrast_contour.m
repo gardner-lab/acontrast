@@ -41,17 +41,18 @@ end
 
 %% PARAMETERS (PASSED AS PARAMETER/VALUE PAIRS) 
 
-use_band=[3e3 10e3]; % band to compute features in
-pow_weight=0; % enables power weighting
+use_band=[500 12e3]; % band to compute features in
+pow_weight=1; % enables power weighting
 pow_scale='log'; % power weighting (log or linear)
 len = 23.2; % window length (in ms)
 overlap = 22.8; % window overlap (in ms)
 angle_list = (pi/8:pi/8:pi) + pi/8; % compute contours in all these angle_list - recommended not to change.
-timescale_list = 0.5:0.2:2.2; % time scales in milliseconds for this analysis
+timescale_list = [1 1.45 2.1 3]; % time scales in milliseconds for this analysis
 clength_threshold = 95; % keep only contours longer than this length percentile 98 or 99 recommended.
 norm_amp=1; % normalize amplitude to [-1,1]
 filtering=300; % high pass filtering of mic signal
 regression_timescale=.005; % in seconds, computes smooth derivative through windowed regression
+smoothing=100; % smooth the final score
 
 %% END USER PARAMETERS
 
@@ -85,6 +86,8 @@ for i=1:2:nparams
 			pow_scale=varargin{i+1};
 		case 'regression_timescale'
 			regression_timescale=varargin{i+1};
+		case 'smoothing'
+			smoothing=varargin{i+1};
 	end
 end
 
@@ -101,39 +104,39 @@ if isempty(maxf), maxf=length(F); end
 
 nangles=length(angle_list);
 ntimescales=length(timescale_list);
-
 disp('Tiling feature matrix...');
 
 RAW_FEATURES=zeros(nangles*ntimescales,length(T));
 
-weights=SONOGRAMS;
-
 % get weighting from sonograms
-
-if pow_weight & strcmp(lower(pow_scale(1:3)),'log')	
-	for i=1:length(weights)
-		weights{i}=log(abs(weights{i}));
-	end
-elseif pow_weight & strcmp(lower(pow_scale(1:3)),'lin')
-	for i=1:length(weights)
-		weights{i}=abs(weights);
-	end
-else
-	for i=1:length(weights)
-		weights{i}=ones(size(weights{i}));
-	end
-end
 
 counter=1;
 for i=1:ntimescales
 	for j=1:nangles
-		RAW_FEATURES(counter,:)=full(sum(auditory_contour{i}{j}(minf:maxf,:).*weights{i}(minf:maxf,:)));
+
+		if pow_weight & strcmp(lower(pow_scale(1:3)),'log')
+			tmp=auditory_contour(i,j).pwr_img;
+			tmp(tmp~=0)=log(tmp(tmp~=0));
+			RAW_FEATURES(counter,:)=full(sum(tmp));
+		elseif pow_weight & strcmp(lower(pow_scale(1:3)),'lin')
+			RAW_FEATURES(counter,:)=full(sum(auditory_contour(i,j).pwr_img));
+		else
+			RAW_FEATURES(counter,:)=full(sum(auditory_contour(i,j).bin_img));
+		end
+
 		FEATURE_NAME{counter}=sprintf('Timescale %5.3f (ms) & angle %5.3f (rads)',timescale_list(i),angle_list(j));
 		counter=counter+1;
 	end
 end
 
+
 score_fs=1./(T(2)-T(1)); % get the frame rate of the feature vector
+
+if ~isempty(smoothing)
+	[b,a]=ellip(2,.2,40,[smoothing]/(score_fs/2));
+	RAW_FEATURES=filtfilt(b,a,RAW_FEATURES')';
+end
+
 tmp=acontrast_deltacoef(RAW_FEATURES,round(score_fs.*regression_timescale)); % yoonseob used 10 msec regression window	
 
 % interpolate back to original signal space
@@ -144,7 +147,7 @@ disp('Interpolating features...');
 
 FEATURE_MAT=zeros(nangles*ntimescales,length(original_time));
 for i=1:size(RAW_FEATURES,1)
-	FEATURE_MAT(i,:)=interp1(T,tmp(i,:),original_time,'nearest');
+	FEATURE_MAT(i,:)=interp1(T,tmp(i,:),original_time,'linear');
 end
 
 

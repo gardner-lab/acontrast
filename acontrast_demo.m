@@ -5,15 +5,17 @@ font_size=12; % self-explanatory
 disp_band=[0 12e3]; % spectrogram band to display
 clipping=0; % clipping for spectrogram
 imscale=15; % image scaling parameter
-regression_timescale=.005; % sets the smoothness of the derivative calculation
-
+regression_timescale=.0075; % sets the smoothness of the derivative calculation
+pow_scale='log'; % use log power weighting (try 'lin' for linear)
+pow_weight=1; % enable power weighting
 % Load the sample sound
 
 [signal, fs] = wavread('finchdoublet.wav');
 signal_t=[1:length(signal)]/fs;
 
 tic
-[feature_matrix,raw_features,feature_names,consensus,f,t]=acontrast_contour(signal,fs,'regression_timescale',regression_timescale);
+[feature_matrix,raw_features,feature_names,consensus,f,t]=acontrast_contour(signal,fs,...
+	'regression_timescale',regression_timescale,'pow_weight',pow_weight,'pow_scale',pow_scale);
 [envelope_score,envelope,sonogram,sono_f,sono_t]=acontrast_envelope(signal,fs,'regression_timescale',regression_timescale);
 contour_score=sum(abs(feature_matrix));
 toc
