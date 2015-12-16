@@ -1,7 +1,7 @@
 function [ACONTRAST_SCORE,ENVELOPE,SONOGRAM,F,T]=aconstrast_envelope(SIGNAL,FS,varargin)
 %Computes acoustic contrast scores using the derivative of the amplitude envelope. The
-%envelope is computed by taking the summed abs value of the Gabor transform (i.e. Gaussian 
-%windowed spectrogram) across a frequency range of interest (typically 1e3-12e3 for 
+%envelope is computed by taking the summed abs value of the Gabor transform (i.e. Gaussian
+%windowed spectrogram) across a frequency range of interest (typically 1e3-12e3 for
 %birdsong).  This function accepts a number of parameters, see either the Github wiki
 %or edit the function itself for parameter descriptions.  Note that all parameters are passed
 %as parameter/value pairs (see demo).
@@ -128,7 +128,7 @@ if isempty(maxf), maxf=length(F); end
 switch lower(pow_scale)
 	case 'log'
 		ENVELOPE=sum(abs(log(SONOGRAM(minf:maxf,:))));
-	case 'lin'	
+	case 'lin'
 		ENVELOPE=sum(abs(SONOGRAM(minf:maxf,:)));
 	case 'z'
 		ENVELOPE=sum(abs(zscore(SONOGRAM(minf:maxf,:),[],2)));
@@ -139,4 +139,5 @@ end
 score_fs=1./(T(2)-T(1));
 tmp=acontrast_deltacoef(ENVELOPE,round(score_fs*regression_timescale));
 
-ACONTRAST_SCORE=interp1(T,tmp,original_time,'nearest');
+ENVELOPE=interp1(T,ENVELOPE,original_time,'nearest','extrap');
+ACONTRAST_SCORE=interp1(T,tmp,original_time,'nearest','extrap');
