@@ -138,4 +138,5 @@ end
 score_fs=1./(T(2)-T(1));
 tmp=acontrast_deltacoef(ENVELOPE,round(score_fs*regression_timescale));
 
-ACONTRAST_SCORE=interp1(T,tmp,original_time,'nearest');
+ENVELOPE=interp1(T,ENVELOPE,original_time,'nearest','extrap');
+ACONTRAST_SCORE=interp1(T,tmp,original_time,'nearest','extrap');
